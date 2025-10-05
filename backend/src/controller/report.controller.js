@@ -166,6 +166,11 @@ const deleteReport = asyncHandler(async (req, res) => {
 });
 
 
+const getDashboardReports = asyncHandler(async (req, res) => {
+  const reports = await Report.find({}).sort({ createdAt: -1 });
+  return res.status(200).json(new ApiResponse(200, reports, "Reports fetched"));
+});
+
 const getAllReports = asyncHandler(async (req, res) => {
     const reports = await Report.find({})
         .populate("owner", "name email number")
@@ -180,10 +185,18 @@ const getAllReports = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, reports, "Fetched all reports successfully"));
 });
 
+// New: current user’s reports from token
+export const getMyReports = asyncHandler(async (req, res) => {
+  const userId = req.user?._id; // set by verifyJWT
+  const reports = await Report.find({ owner: userId }).sort({ createdAt: -1 });
+  return res.status(200).json(new ApiResponse(200, reports, "My reports fetched"));
+});
+
 export {
     createReport,
     getUserReports,
     updateReport,
     deleteReport,
-    getAllReports
+    getAllReports,
+    getDashboardReports
 }

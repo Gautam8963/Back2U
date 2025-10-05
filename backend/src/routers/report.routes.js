@@ -1,25 +1,41 @@
-import { Router } from 'express';
+import { Router } from "express";
 import {
-    createReport,
-    getUserReports,
-    updateReport,
-    deleteReport,
-    getAllReports
-} from "../controller/report.controller.js"
-import {verifyJWT} from "../middleware/auth.middleware.js"
-import { upload } from "../middleware/multer.middleware.js"
-
-
+  createReport,
+  getUserReports,
+  getMyReports,  
+  updateReport,
+  deleteReport,
+  getAllReports,
+  getDashboardReports, // ensure this is exported from controller
+} from "../controller/report.controller.js";
+import { verifyJWT } from "../middleware/auth.middleware.js";
+import { upload } from "../middleware/multer.middleware.js";
 
 const router = Router();
-router.use(verifyJWT); 
-    
 
-router.route("/")
-    .post(upload.single("file"), createReport) // 🔥 Image will now be received
-    .get(getAllReports);
-router.route("/user/:userId").get(getUserReports);
-router.route("/:reportId").put(updateReport).delete(deleteReport);
-// patch for updating one field and put for updating  2 or more field
+// If dashboard should be public, move verifyJWT off this route.
+// Keeping all routes protected for now because router.use applies to all.
+router.use(verifyJWT);
 
-export default router
+// Dashboard feed
+router.get("/dashboard", getDashboardReports);
+
+// Current user’s own reports (no param)
+router.get("/me", getMyReports);
+
+// Create and list all
+router
+  .route("/")
+  .post(upload.single("file"), createReport) // expects field name "file"
+  .get(getAllReports);
+
+// Reports by user
+router.get("/user/:userId", getUserReports);
+
+// Update/delete by id
+router
+  .route("/:reportId")
+  .put(updateReport)
+  .delete(deleteReport);
+
+export default router;

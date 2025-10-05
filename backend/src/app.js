@@ -22,10 +22,22 @@ const limiter = rateLimit({
 	
 })
 
+// allow both Vite (5173) and Next (3000) during dev
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000"
+];
+
 app.use(cors({
-    origin: process.env.CORS_ORIGIN,
-    credentials:true
-})) 
+  origin: function (origin, callback) {
+    // allow non-browser or same-origin requests without an Origin header
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error("Not allowed by CORS"), false);
+  },
+  credentials: true
+}));
+
 
 app.use(express.json({limit:"16kb"}));
 
